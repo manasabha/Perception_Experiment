@@ -110,6 +110,11 @@ public class RaycastTest : MonoBehaviour {
 				    }
 			    }
 			    if (hit.collider != null){
+				    /*
+				     * When touch is in moving phase, if object is hit, then change object's color.
+				     * Keep track of whose color changed. In touch-ended phase, if this object is not selected,
+				     * we change the color back to cube's color.
+				     */
 				    GameObject touchedObject = hit.transform.gameObject;
 				    if (touchedObject.transform.name == cubes[j].name){
 					    MeshRenderer cuberend = cubes[j].GetComponent<MeshRenderer>();
@@ -118,7 +123,7 @@ public class RaycastTest : MonoBehaviour {
 					    shadeperCube[j] = true;
 					    cubes[j].layer = 0;
 					    //count = count + 1;
-					    //                    myText.text = "I changed color";
+					    //myText.text = "I changed color";
 				    }
 				    else
 				    {
@@ -129,6 +134,10 @@ public class RaycastTest : MonoBehaviour {
 		    }
 		    if (Input.GetTouch(i).phase == TouchPhase.Ended)
 		    {
+			    /*
+			     * Once touch has ended, i.e. finger is lifted, we see if cube is hit.
+			     */
+				    
 			    count += 1;
 			    timetillNow += Time.deltaTime;
 			    // Construct a ray from the current touch coordinates
@@ -139,7 +148,7 @@ public class RaycastTest : MonoBehaviour {
 			    RaycastHit hit;
 			    if (Physics.Raycast(ray, out hit))
 			    {
-				    //              myText.text = "Hit Right";
+				    //myText.text = "Hit Right";
 			    }
 			    else
 			    {
@@ -149,15 +158,23 @@ public class RaycastTest : MonoBehaviour {
 			    {
 				    if (Physics.Raycast(rayLeft, out hit))
 				    {
-					    //                myText.text = "Hit left";
+					    //myText.text = "Hit left";
 				    }
 			    }
 			    if (hit.collider != null)
 			    {
+				    /*
+				     * Object is hit, check if it is the cube / reference plain.
+				     */
 				    GameObject touchedObject = hit.transform.gameObject;
 				    //myText.text += ": " + touchedObject.transform.name;
 				    if (touchedObject.transform.name == cubes[j].name)
 				    {
+					    /*
+					     * If correct cube is hit, we set visibility to false, and turn the next cube on.
+					     * Keep doing this till last cube.
+					     * On last cube, save the stats. 
+					     */
 					    touchedObject.SetActive(false);
 					    if ((j >= cubes.Length - 1) && (!cubes[cubes.Length - 1].activeSelf))
 					    {
@@ -184,6 +201,10 @@ public class RaycastTest : MonoBehaviour {
 					    {
 						    if (cubes[j].activeSelf)
 						    {
+							    /*
+							     * Reset the Render for cube, from previous highlight, 
+							     * as selection wasn't successful.
+							     */
 							    MeshRenderer cuberend = cubes[j].GetComponent<MeshRenderer>();
 							    cuberend.material.shader = temp_shader[j];
 						    }
@@ -198,6 +219,10 @@ public class RaycastTest : MonoBehaviour {
 				    {
 					    if (cubes[j].activeSelf)
 					    {
+						    /*
+						     * Reset the Render for cube, from previous highlight, 
+						     * as selection wasn't successful.
+						     */
 						    MeshRenderer cuberend = cubes[j].GetComponent<MeshRenderer>();
 						    cuberend.material.shader = temp_shader[j];
 					    }
