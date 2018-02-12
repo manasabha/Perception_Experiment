@@ -4,6 +4,9 @@ using UnityEngine.UI;
 using System.IO;
 
 public class RaycastTest : MonoBehaviour {
+    /*
+     * Declaring all variables to collect and store stats for each object touched. 
+     */
     Vector3 touchPosWorld;
 	public Text myText;
 	//Change me to change the touch phase used.
@@ -33,6 +36,10 @@ public class RaycastTest : MonoBehaviour {
         right_failed = false;
         particle = GameObject.Find("point");
         particle.SetActive(false);
+	/*
+	 * Cubes were the game objects chosen for the task, cubes appear in random order at strategically chosen locations.
+	 * All the cubes in unity are set with tag "cube" for grouping them into a Game Object array.
+	 */
         cubes =  GameObject.FindGameObjectsWithTag("cube");
         countperCube = new int[cubes.Length];
         shadeperCube = new bool[cubes.Length];
@@ -48,6 +55,10 @@ public class RaycastTest : MonoBehaviour {
         temp_shader[0] = cuberend1.material.shader;
         cubesize[0] = cuberend1.bounds.size;
         shadeperCube[0] = false;
+	/*
+	 * At any time only one cube is shown on the screen, to prevent confusion that increases selection time.
+	 * At the start, all cube objects except the first one are set to false, and all counters are reset to 0.
+	 */
         for (int i = 1; i < cubes.Length; i++)
         {
             MeshRenderer cuberend = cubes[i].GetComponent<MeshRenderer>();
@@ -63,134 +74,137 @@ public class RaycastTest : MonoBehaviour {
         count = 0;
     }
     void Update() {
-		for (var i = 0; i < Input.touchCount; ++i) {
-            is_fill = false;
-            right_failed = false;
-			if (Input.GetTouch(i).phase == TouchPhase.Moved) {
-                if (!is_count_changed)
-                {
-                    count += 1;
-                    is_count_changed = true;
-                }
-                timetillNow += Time.deltaTime;
-                // Construct a ray from the current touch coordinates
-                Camera camLeft = GameObject.Find("LeftEye").GetComponent<Camera>();
-                Ray rayLeft = camLeft.ScreenPointToRay(Input.GetTouch(i).position);
-                Ray ray = Camera.main.ScreenPointToRay(Input.GetTouch(i).position);
-				// Create a particle if hit
-				RaycastHit hit;
-                if (Physics.Raycast (ray, out hit)) { 
-//					myText.text = " moved Hit Right";
-				}
-                else
-                {
-                    right_failed = true;
-                }
-                if (right_failed)
-                {
-                    if (Physics.Raycast(rayLeft, out hit))
-                    {
-  //                      myText.text = " moved Hit left";
-                    }
-                }
-                if (hit.collider != null){
-					GameObject touchedObject = hit.transform.gameObject;
-                    if (touchedObject.transform.name == cubes[j].name){
-                        MeshRenderer cuberend = cubes[j].GetComponent<MeshRenderer>();
-                        Shader cubemat = Shader.Find("high");
-                        cuberend.material.shader = cubemat;
-                        shadeperCube[j] = true;
-                        cubes[j].layer = 0;
-                        //count = count + 1;
-    //                    myText.text = "I changed color";
-                    }
-                    else
-                    {
-                        particle.transform.position = hit.point;
-                        particle.SetActive(true);
-                    }
-                }
-            }
-            if (Input.GetTouch(i).phase == TouchPhase.Ended)
-            {
-                count += 1;
-                timetillNow += Time.deltaTime;
-                // Construct a ray from the current touch coordinates
-                Camera camLeft = GameObject.Find("LeftEye").GetComponent<Camera>();
-                Ray rayLeft = camLeft.ScreenPointToRay(Input.GetTouch(i).position);
-                Ray ray = Camera.main.ScreenPointToRay(Input.GetTouch(i).position);
-                // Create a particle if hit
-                RaycastHit hit;
-                if (Physics.Raycast(ray, out hit))
-                {
-      //              myText.text = "Hit Right";
-                }
-                else
-                {
-                    right_failed = true;
-                }
-                if (right_failed)
-                {
-                    if (Physics.Raycast(rayLeft, out hit))
-                    {
-        //                myText.text = "Hit left";
-                    }
-                }
-                if (hit.collider != null)
-                {
-                    GameObject touchedObject = hit.transform.gameObject;
-                    //myText.text += ": " + touchedObject.transform.name;
-
-                    if (touchedObject.transform.name == cubes[j].name)
-                    {
-                        touchedObject.SetActive(false);
-                        if ((j >= cubes.Length - 1) && (!cubes[cubes.Length - 1].activeSelf))
-                        {
-                            myText.text = "Thanks!";
-                            countperCube[j] = count - 1;
-                            timeTaken[j] = timetillNow;
-                            SaveInfo();
-                        }
-                        else
-                        {
-                            countperCube[j] = count - 1;
-                            timeTaken[j] = timetillNow;
-                            cubes[j + 1].SetActive(true);
-                            j++;
-                            count = 0;
-                            timetillNow = 0;
-                            is_count_changed = false;
-                            particle.SetActive(false);
-                        }
-                    }
-                    else
-                    {
-                        if (shadeperCube[j])
-                        {
-                            if (cubes[j].activeSelf)
-                            {
-                                MeshRenderer cuberend = cubes[j].GetComponent<MeshRenderer>();
-                                cuberend.material.shader = temp_shader[j];
-                            }
-                        }
-                        particle.transform.position = hit.point;
-                        particle.SetActive(true);
-                    }
-                }
-                else
-                {
-                    if (shadeperCube[j])
-                    {
-                        if (cubes[j].activeSelf)
-                        {
-                            MeshRenderer cuberend = cubes[j].GetComponent<MeshRenderer>();
-                            cuberend.material.shader = temp_shader[j];
-                        }
-                    }
-                }
-
-            }
-        }
+	    for (var i = 0; i < Input.touchCount; ++i) {
+		    is_fill = false;
+		    right_failed = false;
+		    /*
+		     * The idea is to provide feedback by changing color of the cube when user's finger is mvoving over the cube.
+		     * So we do the operation when touch phase is Moved. 
+		     */
+		    if (Input.GetTouch(i).phase == TouchPhase.Moved) {
+			    if (!is_count_changed)
+			    {
+				    count += 1;
+				    is_count_changed = true;
+			    }
+			    timetillNow += Time.deltaTime;
+			    // Construct a ray from the current touch coordinates
+			    Camera camLeft = GameObject.Find("LeftEye").GetComponent<Camera>();
+			    Ray rayLeft = camLeft.ScreenPointToRay(Input.GetTouch(i).position);
+			    Ray ray = Camera.main.ScreenPointToRay(Input.GetTouch(i).position);
+			    // Create a particle if hit
+			    RaycastHit hit;
+			    if (Physics.Raycast (ray, out hit)) { 
+				    //You can print this to understand how raycast from Camera works in VR
+				    //myText.text = " moved Hit Right";
+			    }
+			    else
+			    {
+				    right_failed = true;
+			    }
+			    if (right_failed)
+			    {
+				    if (Physics.Raycast(rayLeft, out hit))
+				    {
+					    //                      myText.text = " moved Hit left";
+				    }
+			    }
+			    if (hit.collider != null){
+				    GameObject touchedObject = hit.transform.gameObject;
+				    if (touchedObject.transform.name == cubes[j].name){
+					    MeshRenderer cuberend = cubes[j].GetComponent<MeshRenderer>();
+					    Shader cubemat = Shader.Find("high");
+					    cuberend.material.shader = cubemat;
+					    shadeperCube[j] = true;
+					    cubes[j].layer = 0;
+					    //count = count + 1;
+					    //                    myText.text = "I changed color";
+				    }
+				    else
+				    {
+					    particle.transform.position = hit.point;
+					    particle.SetActive(true);
+				    }
+			    }
+		    }
+		    if (Input.GetTouch(i).phase == TouchPhase.Ended)
+		    {
+			    count += 1;
+			    timetillNow += Time.deltaTime;
+			    // Construct a ray from the current touch coordinates
+			    Camera camLeft = GameObject.Find("LeftEye").GetComponent<Camera>();
+			    Ray rayLeft = camLeft.ScreenPointToRay(Input.GetTouch(i).position);
+			    Ray ray = Camera.main.ScreenPointToRay(Input.GetTouch(i).position);
+			    // Create a particle if hit
+			    RaycastHit hit;
+			    if (Physics.Raycast(ray, out hit))
+			    {
+				    //              myText.text = "Hit Right";
+			    }
+			    else
+			    {
+				    right_failed = true;
+			    }
+			    if (right_failed)
+			    {
+				    if (Physics.Raycast(rayLeft, out hit))
+				    {
+					    //                myText.text = "Hit left";
+				    }
+			    }
+			    if (hit.collider != null)
+			    {
+				    GameObject touchedObject = hit.transform.gameObject;
+				    //myText.text += ": " + touchedObject.transform.name;
+				    if (touchedObject.transform.name == cubes[j].name)
+				    {
+					    touchedObject.SetActive(false);
+					    if ((j >= cubes.Length - 1) && (!cubes[cubes.Length - 1].activeSelf))
+					    {
+						    myText.text = "Thanks!";
+						    countperCube[j] = count - 1;
+						    timeTaken[j] = timetillNow;
+						    SaveInfo();
+					    }
+					    else
+					    {
+						    countperCube[j] = count - 1;
+						    timeTaken[j] = timetillNow;
+						    cubes[j + 1].SetActive(true);
+						    j++;
+						    count = 0;
+						    timetillNow = 0;
+						    is_count_changed = false;
+						    particle.SetActive(false);
+					    }
+				    }
+				    else
+				    {
+					    if (shadeperCube[j])
+					    {
+						    if (cubes[j].activeSelf)
+						    {
+							    MeshRenderer cuberend = cubes[j].GetComponent<MeshRenderer>();
+							    cuberend.material.shader = temp_shader[j];
+						    }
+					    }
+					    particle.transform.position = hit.point;
+					    particle.SetActive(true);
+				    }
+			    }
+			    else
+			    {
+				    if (shadeperCube[j])
+				    {
+					    if (cubes[j].activeSelf)
+					    {
+						    MeshRenderer cuberend = cubes[j].GetComponent<MeshRenderer>();
+						    cuberend.material.shader = temp_shader[j];
+					    }
+				    }
+			    }
+		    }
+	    }
     }
     void SaveInfo()
     {
